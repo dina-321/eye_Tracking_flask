@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detection Results</title>
+</head>
+<body>
+    <div id="results"></div>
+
+    <script>
+        // Function to fetch detection results from Flask server
+        function fetchResults() {
+            fetch('/update_results')
+                .then(response => response.json())
+                .then(data => {
+                    // Update HTML with detection results
+                    const resultsDiv = document.getElementById('results');
+                    resultsDiv.textContent = JSON.stringify(data); // Display JSON data as string
+                })
+                .catch(error => console.error('Error fetching results:', error));
+        }
+
+        // Fetch detection results when the page loads
+        fetchResults();
+
+        // Fetch detection results every 5 seconds
+        setInterval(fetchResults, 5000);
+    </script>
+</body>
+</html>
