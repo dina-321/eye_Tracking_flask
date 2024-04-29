@@ -167,3 +167,4 @@ wincertstore==0.2
 wrapt==1.12.1
 yapf @ file:///tmp/build/80754af9/yapf_1615749224965/work
 zipp @ file:///tmp/build/80754af9/zipp_1633618647012/work
+Python=3.12.1
