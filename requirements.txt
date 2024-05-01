@@ -4,3 +4,5 @@ numpy==1.26.4
 opencv-python==4.9.0.80
 pandas==2.2.2
 gunicorn==21.2.0
+werkzeug==2.0.2
+
