@@ -31,12 +31,6 @@ PyQt5-sip==12.13.0
 PyQtChart==5.12
 PyQtWebEngine==5.12.1
 pywinpty==0.5.7
-PyYAML==5.4.1
-terminado==0.9.4
-webencodings==0.5.1
-Werkzeug==2.0.3
-wincertstore==0.2
-wrapt==1.12.1
 numpy==1.21.0
 
 
