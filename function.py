@@ -5,13 +5,13 @@ import pandas as pd
 from math import hypot
 from datetime import datetime, timedelta
 
-def detect_cheating():
+def detect_cheating(socketio):
     # Initialize the video capture object
     cap = cv2.VideoCapture(0)
 
     # Initialize the face detector
     detector = dlib.get_frontal_face_detector()
-    predictor = dlib.shape_predictor(r"C:\Users\DELL\Downloads\con-focus-ai-master\con-focus-ai-master\EyeTracking\trained_models\shape_predictor_68_face_landmarks.dat")
+    predictor = dlib.shape_predictor(r"C:\Users\Dina\hu\shape_predictor_68_face_landmarks.dat")
     font = cv2.FONT_HERSHEY_PLAIN
 
     def midpoint(p1, p2):
@@ -97,7 +97,15 @@ def detect_cheating():
             multi += 1
             if multi >= 30:
                 print("Multiple faces detected!")
+                socketio.emit('update_detection_results', "multiple!")
+
                 multi = 0
+                results.append(("multiple faces detected!", 0, 0, datetime.now()))
+                recording_start_time = datetime.now()
+                recording_end_time = recording_start_time + timedelta(seconds=recording_duration)
+                fourcc = cv2.VideoWriter_fourcc(*'XVID')
+                out = cv2.VideoWriter(f'cheating_clip_multiple_{recording_start_time.strftime("%Y%m%d_%H%M%S")}.avi', fourcc, recording_fps, (frame.shape[1], frame.shape[0]))
+
 
            
         elif len(faces) > 0:
@@ -122,6 +130,7 @@ def detect_cheating():
                     left_counter = 0
                     if right_counter >= 35:
                         print("Student is cheating by looking RIGHT!")
+                        socketio.emit('update_detection_results', "Student is cheating by looking RIGHT!")
                         right_counter = 0
                         results.append(("RIGHT", right_eye_coords, left_eye_coords, datetime.now()))
                         recording_start_time = datetime.now()
@@ -141,6 +150,8 @@ def detect_cheating():
                     right_counter = 0
                     if left_counter >= 35:
                         print("Student is cheating by looking LEFT!")
+                        socketio.emit('update_detection_results', "Student is cheating by looking LEFT!")
+
                         left_counter = 0
                         results.append(("LEFT", right_eye_coords, left_eye_coords, datetime.now()))
                         recording_start_time = datetime.now()
