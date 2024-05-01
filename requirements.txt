@@ -30,7 +30,6 @@ PyQt5==5.12.3
 PyQt5-sip==12.13.0
 PyQtChart==5.12
 PyQtWebEngine==5.12.1
-pywin32
 pywinpty==0.5.7
 PyYAML==5.4.1
 terminado==0.9.4
