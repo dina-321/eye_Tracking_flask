@@ -31,6 +31,7 @@ PyQt5-sip==12.13.0
 PyQtChart==5.12
 PyQtWebEngine==5.12.1
 pywinpty==0.5.7
+numpy>=1.21.0
 
 
 
