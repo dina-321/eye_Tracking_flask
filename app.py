@@ -1,16 +1,25 @@
-from flask import Flask, render_template
+from flask import Flask, request, jsonify
+from flask_socketio import SocketIO
 from function import detect_cheating
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your_secret_key'
+socketio = SocketIO(app)
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+@app.route('/detect_cheating', methods=['POST'])
+def detect_cheating_route():
+    detection_results_df = detect_cheating(socketio)  # Trigger detection process
+    detection_results_dict = detection_results_df.to_dict(orient='records')  # Convert DataFrame to dictionary
+    return jsonify(detection_results_dict)  # Convert dictionary to JSON and return as response
 
-@app.route('/update_results')
-def update_results():
-    detection_results = detect_cheating()  # Call detect_cheating to get the latest results
-    return detection_results.to_json()  # Convert the DataFrame to JSON and return it
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected')
+
+@socketio.on('get_detection_results')
+def get_detection_results():
+    detect_cheating(socketio)  # Pass socketio to detect_cheating function
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    socketio.run(app, debug=True)
+
