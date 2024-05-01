@@ -21,7 +21,7 @@ itsdangerous==2.0.1
 mccabe==0.6.1
 mistune
 mypy-extensions==0.4.3
-opencv-python==4.5.3.56
+opencv-python==4.5.3
 openpyxl==3.1.2
 pandas==1.1.5
 parso==0.7.0
@@ -40,5 +40,6 @@ webencodings==0.5.1
 Werkzeug==2.0.3
 wincertstore==0.2
 wrapt==1.12.1
-numpy==1.21.5
+numpy==1.21.0
+
 
