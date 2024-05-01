@@ -1,16 +1,18 @@
-#model.py
+from flask import Flask, render_template
+from flask_socketio import SocketIO
 from function import detect_cheating
-import pickle
 
-eye=detect_cheating()
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your_secret_key'
+socketio = SocketIO(app)
 
-# Save the model to a file
-#with open('eye.pkl', 'wb') as f:
-  #  pickle.dump(eye, f)
-pickle.dump(eye, open('eye.pkl','wb'))
+@app.route('/')
+def home():
+    return render_template('index.html')
 
-#with open('eye.pkl', 'rb') as f:
- #   eyee = pickle.load(f)
-eyee = pickle.load(open('eye.pkl','rb'))
+@socketio.on('get_detection_results')
+def get_detection_results():
+    detect_cheating(socketio)  # Pass socketio to detect_cheating function
 
-print(eyee)
+if __name__ == "__main__":
+    socketio.run(app, debug=True)
