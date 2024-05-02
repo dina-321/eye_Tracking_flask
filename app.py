@@ -1,3 +1,4 @@
+
 from flask import Flask, request, jsonify
 from flask_socketio import SocketIO
 from function import detect_cheating
@@ -16,10 +17,5 @@ def detect_cheating_route():
 def handle_connect():
     print('Client connected')
 
-@socketio.on('get_detection_results')
-def get_detection_results():
-    detect_cheating(socketio)  # Pass socketio to detect_cheating function
-
 if __name__ == "__main__":
     socketio.run(app, debug=True)
-
