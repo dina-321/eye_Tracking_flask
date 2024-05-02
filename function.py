@@ -6,6 +6,8 @@ from math import hypot
 from datetime import datetime, timedelta
 
 def detect_cheating(socketio):
+
+
     # Initialize the video capture object
     cap = cv2.VideoCapture(0)
 
@@ -98,7 +100,6 @@ def detect_cheating(socketio):
             if multi >= 30:
                 print("Multiple faces detected!")
                 socketio.emit('update_detection_results', "multiple!")
-
                 multi = 0
                 results.append(("multiple faces detected!", 0, 0, datetime.now()))
                 recording_start_time = datetime.now()
@@ -163,6 +164,7 @@ def detect_cheating(socketio):
             counter += 1
             if counter >= 30:
                 print("No face detected!")
+                socketio.emit('update_detection_results', "no face!")
                 counter = 0
                 results.append(("No face detected!", 0, 0, datetime.now()))
                 recording_start_time = datetime.now()
@@ -193,3 +195,4 @@ def detect_cheating(socketio):
 
 # Call the function to execute the code
 # detect_cheating()
+
