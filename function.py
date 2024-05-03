@@ -5,7 +5,7 @@ import pandas as pd
 from math import hypot
 from datetime import datetime, timedelta
 
-def detect_cheating(socketio=None):
+def detect_cheating(socketio):
 
 
     # Initialize the video capture object
