@@ -5,4 +5,4 @@ opencv-python-headless
 pandas==2.2.2
 gunicorn==21.2.0
 werkzeug==2.0.2
-
+dlib-19.24.1
