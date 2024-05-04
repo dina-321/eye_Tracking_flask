@@ -3,29 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detection Results</title>
+    <title>Real-time Detection</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+    <script type="text/javascript">
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        socket.on('connect', function() {
+            console.log('Connected to server');
+            socket.emit('get_detection_results');
+        });
+
+        socket.on('update_detection_results', function(data) {
+            console.log('Received updated detection results:', data);
+            // Update your HTML to display the detection results in real-time
+            // For example, you can append the data to a list
+            var resultList = document.getElementById('resultList');
+            resultList.innerHTML = ''; // Clear previous results
+            data.forEach(function(result) {
+                var listItem = document.createElement('li');
+                listItem.textContent = JSON.stringify(result);
+                resultList.appendChild(listItem);
+            });
+        });
+    </script>
 </head>
 <body>
-    <div id="results"></div>
-
-    <script>
-        // Function to fetch detection results from Flask server
-        function fetchResults() {
-            fetch('/update_results')
-                .then(response => response.json())
-                .then(data => {
-                    // Update HTML with detection results
-                    const resultsDiv = document.getElementById('results');
-                    resultsDiv.textContent = JSON.stringify(data); // Display JSON data as string
-                })
-                .catch(error => console.error('Error fetching results:', error));
-        }
-
-        // Fetch detection results when the page loads
-        fetchResults();
-
-        // Fetch detection results every 5 seconds
-        setInterval(fetchResults, 5000);
-    </script>
+    <h1>Real-time Detection Results</h1>
+    <ul id="resultList">
+        <!-- Detection results will be added here dynamically -->
+    </ul>
 </body>
 </html>
