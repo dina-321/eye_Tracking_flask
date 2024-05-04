@@ -13,7 +13,7 @@ def detect_cheating(socketio):
 
     # Initialize the face detector
     detector = dlib.get_frontal_face_detector()
-    predictor = dlib.shape_predictor(r"/content/shape_predictor_68_face_landmarks.dat")
+    predictor = dlib.shape_predictor(r"./shape_predictor_68_face_landmarks.dat")
     font = cv2.FONT_HERSHEY_PLAIN
 
     def midpoint(p1, p2):
