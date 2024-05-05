@@ -2,7 +2,7 @@
 
 
 from flask import Flask, request, jsonify
-from function2 import detect_cheating
+from function import detect_cheating
 
 app = Flask(__name__)
 
