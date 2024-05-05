@@ -173,7 +173,7 @@ def detect_cheating(video_url):
             else:
                 out.release()
 
-        key = cv2.waitKey(1)
+        key = cv2.waitKey(1) & 0xFF
         if key == 27:
             break
 
