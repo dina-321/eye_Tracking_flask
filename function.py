@@ -5,8 +5,7 @@ import pandas as pd
 from math import hypot
 from datetime import datetime, timedelta
 
-def detect_cheating(socketio):
-
+def detect_cheating():
 
     # Initialize the video capture object
     cap = cv2.VideoCapture(0)
@@ -89,8 +88,6 @@ def detect_cheating(socketio):
         if not ret:
             break
             
-        cv2.putText(frame, "you need to look center most of the time or it will considered as cheating",  (20, 50), font, 1, (255, 0, 0), 2)
-
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         faces = detector(gray)
@@ -99,7 +96,6 @@ def detect_cheating(socketio):
             multi += 1
             if multi >= 30:
                 print("Multiple faces detected!")
-                socketio.emit('update_detection_results', "multiple!")
                 multi = 0
                 results.append(("multiple faces detected!", 0, 0, datetime.now()))
                 recording_start_time = datetime.now()
@@ -107,8 +103,6 @@ def detect_cheating(socketio):
                 fourcc = cv2.VideoWriter_fourcc(*'XVID')
                 out = cv2.VideoWriter(f'cheating_clip_multiple_{recording_start_time.strftime("%Y%m%d_%H%M%S")}.avi', fourcc, recording_fps, (frame.shape[1], frame.shape[0]))
 
-
-           
         elif len(faces) > 0:
             for face in faces:
                 landmarks = predictor(gray, face)
@@ -117,21 +111,15 @@ def detect_cheating(socketio):
                 right_eye_ratio = get_blinking_ratio([42, 43, 44, 45, 46, 47], landmarks)
                 blinking_ratio = (left_eye_ratio + right_eye_ratio) / 2
 
-                if blinking_ratio > 5.7:
-                    cv2.putText(frame, "BLINKING", (50, 150), font, 7, (255, 0, 0), thickness=5)
-
                 gaze_ratio_left_eye, left_eye_coords = get_gaze_ratio([36, 37, 38, 39, 40, 41], landmarks, frame)
                 gaze_ratio_right_eye, right_eye_coords = get_gaze_ratio([42, 43, 44, 45, 46, 47], landmarks, frame)
                 gaze_ratio = (gaze_ratio_right_eye + gaze_ratio_left_eye) / 2
 
                 if gaze_ratio < 0.5:
-                    cv2.putText(frame, "RIGHT", (50, 100), font, 2, (0, 0, 255), 3)
-                    new_frame[:] = (0, 0, 255)
                     right_counter += 1
                     left_counter = 0
                     if right_counter >= 35:
                         print("Student is cheating by looking RIGHT!")
-                        socketio.emit('update_detection_results', "Student is cheating by looking RIGHT!")
                         right_counter = 0
                         results.append(("RIGHT", right_eye_coords, left_eye_coords, datetime.now()))
                         recording_start_time = datetime.now()
@@ -140,19 +128,14 @@ def detect_cheating(socketio):
                         out = cv2.VideoWriter(f'cheating_clip_right_{recording_start_time.strftime("%Y%m%d_%H%M%S")}.avi', fourcc, recording_fps, (frame.shape[1], frame.shape[0]))
 
                 elif 0.5 < gaze_ratio < 2:
-                    cv2.putText(frame, "CENTER", (50, 100), font, 2, (0, 0, 255), 3)
                     left_counter = 0
                     right_counter = 0
-                    
+
                 elif gaze_ratio > 2:
-                    cv2.putText(frame, "LEFT", (50, 100), font, 2, (0, 0, 255), 3)
-                    new_frame[:] = (255, 0, 0)
                     left_counter += 1
                     right_counter = 0
                     if left_counter >= 35:
                         print("Student is cheating by looking LEFT!")
-                        socketio.emit('update_detection_results', "Student is cheating by looking LEFT!")
-
                         left_counter = 0
                         results.append(("LEFT", right_eye_coords, left_eye_coords, datetime.now()))
                         recording_start_time = datetime.now()
@@ -160,11 +143,9 @@ def detect_cheating(socketio):
                         fourcc = cv2.VideoWriter_fourcc(*'XVID')
                         out = cv2.VideoWriter(f'cheating_clip_left_{recording_start_time.strftime("%Y%m%d_%H%M%S")}.avi', fourcc, recording_fps, (frame.shape[1], frame.shape[0]))
         else:
-            cv2.putText(frame, "No face detected!", (50, 100), font, 2, (0, 0, 255), 3)
             counter += 1
             if counter >= 30:
                 print("No face detected!")
-                socketio.emit('update_detection_results', "no face!")
                 counter = 0
                 results.append(("No face detected!", 0, 0, datetime.now()))
                 recording_start_time = datetime.now()
@@ -172,9 +153,6 @@ def detect_cheating(socketio):
                 fourcc = cv2.VideoWriter_fourcc(*'XVID')
                 out = cv2.VideoWriter(f'cheating_clip_no_face_{recording_start_time.strftime("%Y%m%d_%H%M%S")}.avi', fourcc, recording_fps, (frame.shape[1], frame.shape[0]))
 
-        cv2.imshow("Frame", frame)
-        cv2.imshow("New frame", new_frame)
-       
         if out is not None:
             if datetime.now() <= recording_end_time:
                 out.write(frame)
@@ -186,7 +164,6 @@ def detect_cheating(socketio):
             break
 
     cap.release()
-    cv2.destroyAllWindows()
 
     results_df = pd.DataFrame(results, columns=["Direction", "Right Eye Coordinates", "Left Eye Coordinates", "Time"])
 
@@ -194,5 +171,4 @@ def detect_cheating(socketio):
     return results_df
 
 # Call the function to execute the code
-# detect_cheating()
-
+detect_cheating()
