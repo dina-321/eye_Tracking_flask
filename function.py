@@ -1,11 +1,10 @@
-
-
 import cv2
 import numpy as np
 import dlib
 import pandas as pd
 from math import hypot
 from datetime import datetime, timedelta
+import time
 
 def detect_cheating(video_url):
     cap = cv2.VideoCapture(video_url)
@@ -80,6 +79,7 @@ def detect_cheating(video_url):
     recording_fps = 20  
 
     out = None
+    start_time = time.time()
 
     while True:
         new_frame = np.zeros((500, 500, 3), np.uint8)
@@ -173,17 +173,13 @@ def detect_cheating(video_url):
             else:
                 out.release()
 
-        key = cv2.waitKey(1) & 0xFF
-        if key == 27:
+        # Timer-based loop exit
+        if time.time() - start_time > recording_duration:
             break
 
     cap.release()
 
     results_df = pd.DataFrame(results, columns=["Direction", "Time"])
-
-    # Convert int32 values in DataFrame to regular Python integers
-    #results_df["Right Eye Coordinates"] = results_df["Right Eye Coordinates"].astype(int)
-    #results_df["Left Eye Coordinates"] = results_df["Left Eye Coordinates"].astype(int)
 
     # Serialize DataFrame to dictionary
     results_dict = results_df.to_dict(orient='records')
