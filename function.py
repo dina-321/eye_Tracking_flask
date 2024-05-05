@@ -77,7 +77,7 @@ def detect_cheating(video_url):
     results = []
 
     recording_duration = 20  
-    recording_fps = 20  
+    recording_fps = 40  
 
     out = None
     start_time = time.time()
