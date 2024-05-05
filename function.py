@@ -6,6 +6,7 @@ from math import hypot
 from datetime import datetime, timedelta
 import time
 
+
 def detect_cheating(video_url):
     cap = cv2.VideoCapture(video_url)
 
