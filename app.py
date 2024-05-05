@@ -1,29 +1,22 @@
-from flask import Flask, render_template
-from flask_socketio import SocketIO, emit
-from function import detect_cheating
+
+
+
+from flask import Flask, request, jsonify
+from function2 import detect_cheating
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key'
-socketio = SocketIO(app)
 
-@app.route('/')
-def home():
-    return render_template('index.html')
-
-@socketio.on('connect')
-def handle_connect():
-    print('Client connected')
-
-@socketio.on('get_detection_results')
-def get_detection_results():
-    detection_results = detect_cheating()
+@app.route('/detect_cheating', methods=['POST'])
+def detect_cheating_route():
+    # Get the video URL from the request
+    video_url = request.form['video_url']
     
-    # Convert Timestamp objects to strings
-    detection_results['Time'] = detection_results['Time'].astype(str)
+    # Call the detect_cheating function with the video URL
+    results = detect_cheating(video_url)
     
-    # Emit the modified DataFrame as a list of dictionaries
-    emit('update_detection_results', detection_results.to_dict(orient='records'))
-
+    # Return the results as JSON
+    return jsonify(results)
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True)
+    app.run(debug=True)
+
