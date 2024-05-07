@@ -12,9 +12,9 @@ import cloudinary.uploader
 def detect_cheating(image_paths):
     # Initialize Cloudinary
     cloudinary.config(
-        cloud_name="df6ywp2pe",
-        api_key="371292529787514",
-        api_secret="eZLWWSh3hvOmU-nCgimYJIoxFQw"
+        cloud_name="hcvu40dvj",
+        api_key="523379171599888",
+        api_secret="pD2VU84Ew_KMETn0o-6kdbjPFnU"
     )
 
     detector = dlib.get_frontal_face_detector()
