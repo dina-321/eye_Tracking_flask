@@ -18,7 +18,7 @@ def detect_cheating(image_paths):
     )
 
     detector = dlib.get_frontal_face_detector()
-    predictor = dlib.shape_predictor(r"C:\Users\Dina\Downloads\shape_predictor_68_face_landmarks.dat")
+    predictor = dlib.shape_predictor(r"shape_predictor_68_face_landmarks.dat")
     font = cv2.FONT_HERSHEY_PLAIN
 
     def midpoint(p1, p2):
