@@ -1,17 +1,24 @@
+
 import cv2
 import numpy as np
 import dlib
 import pandas as pd
 from math import hypot
 from datetime import datetime, timedelta
-import time
+from urllib.request import urlopen
+import cloudinary
+import cloudinary.uploader
 
-
-def detect_cheating(video_url):
-    cap = cv2.VideoCapture(video_url)
+def detect_cheating(image_paths):
+    # Initialize Cloudinary
+    cloudinary.config(
+        cloud_name="df6ywp2pe",
+        api_key="371292529787514",
+        api_secret="eZLWWSh3hvOmU-nCgimYJIoxFQw"
+    )
 
     detector = dlib.get_frontal_face_detector()
-    predictor = dlib.shape_predictor(r"shape_predictor_68_face_landmarks.dat")
+    predictor = dlib.shape_predictor(r"C:\Users\Dina\Downloads\shape_predictor_68_face_landmarks.dat")
     font = cv2.FONT_HERSHEY_PLAIN
 
     def midpoint(p1, p2):
@@ -69,118 +76,64 @@ def detect_cheating(video_url):
             gaze_ratio = left_side_white / right_side_white
 
         return gaze_ratio, (min_x, min_y, max_x, max_y)
+        # Function implementation
 
-    left_counter = 0  
-    right_counter = 0   
-    counter = 0
-    multi = 0
+
     results = []
 
-    recording_duration = 6  
-    recording_fps = 20  
-
-    out = None
-    start_time = time.time()
-
-    while True:
-        new_frame = np.zeros((500, 500, 3), np.uint8)
-        ret, frame = cap.read()
-        if not ret:
-            break
-
+    for path in image_paths:
+        frame = cv2.imread(path)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         faces = detector(gray)
 
         if len(faces) > 1:
-            multi += 1
-            if multi >= 50:
-                print("Multiple faces detected!")
-                multi = 0
-                results.append(("Multiple faces", datetime.now()))
-                recording_start_time = datetime.now()
-                recording_end_time = recording_start_time + timedelta(seconds=recording_duration)
-                fourcc = cv2.VideoWriter_fourcc(*'XVID')
-                out = cv2.VideoWriter(f'cheating_clip_M_{recording_start_time.strftime("%Y%m%d_%H%M%S")}.avi', fourcc, recording_fps, (frame.shape[1], frame.shape[0]))
+            upload_result = cloudinary.uploader.upload(path)
+            elapsed_seconds = datetime.now().timestamp()
+            results.append(("Multiple faces", elapsed_seconds,"Cloudinary URL", upload_result["secure_url"]))
+            
 
+            continue
 
-        elif len(faces) > 0:
-            for face in faces:
-                landmarks = predictor(gray, face)
+        elif len(faces) == 0:
+            upload_result = cloudinary.uploader.upload(path)
+            elapsed_seconds = datetime.now().timestamp()
+            results.append(("No face detected!", elapsed_seconds,"Cloudinary URL", upload_result["secure_url"]))
 
-                left_eye_ratio = get_blinking_ratio([36, 37, 38, 39, 40, 41], landmarks)
-                right_eye_ratio = get_blinking_ratio([42, 43, 44, 45, 46, 47], landmarks)
-                blinking_ratio = (left_eye_ratio + right_eye_ratio) / 2
+            continue
 
-                if blinking_ratio > 5.7:
-                    cv2.putText(frame, "BLINKING", (50, 150), font, 7, (255, 0, 0), thickness=5)
+        for face in faces:
+            landmarks = predictor(gray, face)
 
-                gaze_ratio_left_eye, left_eye_coords = get_gaze_ratio([36, 37, 38, 39, 40, 41], landmarks, frame)
-                gaze_ratio_right_eye, right_eye_coords = get_gaze_ratio([42, 43, 44, 45, 46, 47], landmarks, frame)
+            left_eye_ratio = get_blinking_ratio([36, 37, 38, 39, 40, 41], landmarks)
+            right_eye_ratio = get_blinking_ratio([42, 43, 44, 45, 46, 47], landmarks)
+            blinking_ratio = (left_eye_ratio + right_eye_ratio) / 2
 
-                if gaze_ratio_right_eye is not None and gaze_ratio_left_eye is not None:
-                    gaze_ratio = (gaze_ratio_right_eye + gaze_ratio_left_eye) / 2
-                else:
-                    gaze_ratio = None
+            if blinking_ratio > 5.7:
+                results.append(("BLINKING", datetime.now().timestamp()))
 
-                if gaze_ratio is not None:
-                    if gaze_ratio < 0.5:
-                        cv2.putText(frame, "RIGHT", (50, 100), font, 2, (0, 0, 255), 3)
-                        new_frame[:] = (0, 0, 255)
-                        right_counter += 1
-                        left_counter = 0
-                        if right_counter >= 35:
-                            print("Student is cheating by looking RIGHT!")
-                            right_counter = 0
-                            results.append(("RIGHT", datetime.now()))
-                            recording_start_time = datetime.now()
-                            recording_end_time = recording_start_time + timedelta(seconds=recording_duration)
-                            fourcc = cv2.VideoWriter_fourcc(*'XVID')
-                            out = cv2.VideoWriter(f'cheating_clip_right_{recording_start_time.strftime("%Y%m%d_%H%M%S")}.avi', fourcc, recording_fps, (frame.shape[1], frame.shape[0]))
+            gaze_ratio_left_eye, left_eye_coords = get_gaze_ratio([36, 37, 38, 39, 40, 41], landmarks, frame)
+            gaze_ratio_right_eye, right_eye_coords = get_gaze_ratio([42, 43, 44, 45, 46, 47], landmarks, frame)
 
-                    elif 0.5 < gaze_ratio < 2:
-                        cv2.putText(frame, "CENTER", (50, 100), font, 2, (0, 0, 255), 3)
-                        left_counter = 0
-                        right_counter = 0
-                        
-                    elif gaze_ratio > 2:
-                        cv2.putText(frame, "LEFT", (50, 100), font, 2, (0, 0, 255), 3)
-                        new_frame[:] = (255, 0, 0)
-                        left_counter += 1
-                        right_counter = 0
-                        if left_counter >= 35:
-                            print("Student is cheating by looking LEFT!")
-                            left_counter = 0
-                            results.append(("LEFT", datetime.now()))
-                            recording_start_time = datetime.now()
-                            recording_end_time = recording_start_time + timedelta(seconds=recording_duration)
-                            fourcc = cv2.VideoWriter_fourcc(*'XVID')
-                            out = cv2.VideoWriter(f'cheating_clip_left_{recording_start_time.strftime("%Y%m%d_%H%M%S")}.avi', fourcc, recording_fps, (frame.shape[1], frame.shape[0]))
-        else:
-            cv2.putText(frame, "No face detected!", (50, 100), font, 2, (0, 0, 255), 3)
-            counter += 1
-            if counter >= 50:
-                print("No face detected!")
-                counter = 0
-                results.append(("No face detected!", datetime.now()))
-                recording_start_time = datetime.now()
-                recording_end_time = recording_start_time + timedelta(seconds=recording_duration)
-                fourcc = cv2.VideoWriter_fourcc(*'XVID')
-                out = cv2.VideoWriter(f'cheating_clip_no_face_{recording_start_time.strftime("%Y%m%d_%H%M%S")}.avi', fourcc, recording_fps, (frame.shape[1], frame.shape[0]))
-
-        if out is not None:
-            if datetime.now() <= recording_end_time:
-                 out.write(frame)
+            if gaze_ratio_right_eye is not None and gaze_ratio_left_eye is not None:
+                gaze_ratio = (gaze_ratio_right_eye + gaze_ratio_left_eye) / 2
             else:
-                out.release()
+                gaze_ratio = None
 
-        # Timer-based loop exit
-        if time.time() - start_time > recording_duration:
-            break
+            if gaze_ratio is not None:
+                if gaze_ratio < 0.5:
+                    upload_result = cloudinary.uploader.upload(path)
+                    results.append(("RIGHT", datetime.now().timestamp(),"Cloudinary URL", upload_result["secure_url"]))
+                    
+                elif 0.5 < gaze_ratio < 2:
+                    pass
+                elif gaze_ratio > 2:
+                    upload_result = cloudinary.uploader.upload(path)
+                    results.append(("LEFT", datetime.now().timestamp(),"Cloudinary URL", upload_result["secure_url"]))
+                    
+                    
 
-    cap.release()
-
-    results_df = pd.DataFrame(results, columns=["Direction", "Time"])
+    results_df = pd.DataFrame(results, columns=["Direction", "Timestamp","Cloudinary URL","URL"])
 
     # Serialize DataFrame to dictionary
     results_dict = results_df.to_dict(orient='records')
