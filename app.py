@@ -1,9 +1,11 @@
 from flask import Flask, request, jsonify
-from function import detectcheating
+from flask_cors import CORS
+from function import detect_cheating
 import tempfile
 import os
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/detect', methods=['POST'])
 def detect():
