@@ -1,11 +1,9 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
-from function import detect_cheating
+from function import detectcheating
 import tempfile
 import os
 
 app = Flask(__name__)
-CORS(app)
 
 @app.route('/detect', methods=['POST'])
 def detect():
@@ -13,11 +11,11 @@ def detect():
         if 'imagefiles' not in request.files:
             return jsonify({'error': 'No files uploaded'})
 
-        image_files = request.files.getlist('imagefiles')
+        imagefiles = request.files.getlist('imagefiles')
         if len(image_files) == 0:
             return jsonify({'error': 'No files uploaded'})
 
-        # Save uploaded files temporarily
+Save uploaded files temporarily
         temp_file_paths = []
         for image_file in image_files:
             temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.jpg')
@@ -25,10 +23,10 @@ def detect():
             image_file.save(temp_file)
             temp_file.close()
 
-        # Perform cheating detection
+Perform cheating detection
         results = detect_cheating(temp_file_paths)
 
-        # Delete temporary files
+Delete temporary files
         for temp_file_path in temp_file_paths:
             os.unlink(temp_file_path)
 
